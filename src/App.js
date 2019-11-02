@@ -38,7 +38,7 @@ class App extends Component {
 
   filterBy = (filterType) => {
      this.filterTypeChange(filterType);
-     this.filterData();
+    //  this.filterData();
   }
 
   filterData = () => {

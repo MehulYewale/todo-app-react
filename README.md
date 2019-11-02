@@ -1,68 +1,76 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### We have build todoApp by three ways.
+1. App.js -- simple state object using react.
+2. AppStore.js -- redux way within single file to access single store object.
+3. TodoApp.js -- with redux provider to access single store from multiple file.
 
-## Available Scripts
+You can change the index.js to render ReactDOM root eelement to see difference.
 
-In the project directory, you can run:
+-- Redux is a predictable state container for JavaScript apps.
+-- Redux maintains the state of an entire application in a single immutable state tree (object), which can’t be changed directly. When something changes, a new object is created (using actions and reducers).
+-- The main difference is that Flux has multiple stores that change the state of the application, and it broadcasts these changes as events. Components can subscribe to these events to sync with the current state. Redux doesn’t have a dispatcher, which in Flux is used to broadcast payloads to registered callbacks. 
+-- State is read-only: The only way to change the state is to emit an action, an object describing what happened.
+-- To specify how the state tree is transformed by actions, you write pure reducers.
+-- Redux reducer always return the new state of your application. Never Mutate State Within the Reducers
+-- A REDUCER is just a function. A function that takes in two parameters. The first is the STATE of the app, and the other is an ACTION.
+-- Action Creators are simply functions that return action objects.
+-- To subscribe to store updates, use the store.subscribe() method.
+-----------------------------------------------------------------------------------
+function createStore(reducer) {
+    var state;
+    var listeners = []
 
-### `npm start`
+    function getState() {
+        return state
+    }
+    
+    function subscribe(listener) {
+        listeners.push(listener)
+        return unsubscribe() {
+            var index = listeners.indexOf(listener)
+            listeners.splice(index, 1)
+	    // listeners = listeners.filter(= => l !== listener)
+        }
+    }
+    
+    function dispatch(action) {
+        state = reducer(state, action)
+        listeners.forEach(listener => listener())
+    }
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+    dispatch({})
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+    return { dispatch, subscribe, getState }
+}
 
-### `npm test`
+function combineReducers(reducers){
+   return (state ={}, action) => {
+	return Object.keys(reducers).reduce(
+		(nextstate,key) => {
+			nextstate[key]= reducers[key](state[key],action);
+			return nextstate;
+		}, {});
+	
+	}
+}
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+class Provider extend Component {
+	getChildContext() { return {store:this.props.store}};
+	render() { return this.props.children; } ;
+}
+Provider.childContextTypes = {
+	store: React.PropTypes.object
+}
+AddTodo.contextType = {
+	store: React.PropTypes.object
+}
 
-### `npm run build`
+But -- react provides inbuild Provider from react-redux
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+<Provider store={createStore(todoApp)}> <TodoApp/> </Provider>
+---------------------------------------------------------------------------------------
+actions: these are objects that should have two properties, one describing the type of action, and one describing what should be changed in the app state.
+reducers: these are pure functions that implement the behavior of the actions. They change the state of the app, based on the action description and the state change description. Reducer can call other reducers with array or objects
+store: it brings the actions and reducers together, holding and changing the state for the whole app — there is only one store.
+Provider: makes the Redux store available to any nested components that have been wrapped in the connect function
+mapStateToProps: this is used to retrieve the store state
+mapDispatchToProps: this is used to retrieve the actions and dispatch them to the store
